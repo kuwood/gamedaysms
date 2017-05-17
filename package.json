@@ -18,9 +18,12 @@
   },
   "homepage": "https://github.com/kuwood/gamedaysms#readme",
   "dependencies": {
+    "body-parser": "^1.17.1",
     "cron": "^1.2.1",
     "dotenv": "^4.0.0",
     "express": "^4.15.3",
+    "firebase": "^3.9.0",
+    "firebase-admin": "^4.2.1",
     "twilio": "^3.0.0"
   }
 }
