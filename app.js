@@ -14,10 +14,12 @@ const axios = require('axios')
 const moment = require('moment')
 
 const admin = require('firebase-admin')
-const serviceAccount = require('./serviceAccountKey.json')
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert({
+    "private_key": process.env.FIREBASE_PRIVATE_KEY,
+    "client_email": process.env.FIREBASE_CLIENT_EMAIL,
+  }),
   databaseURL: process.env.FIREBASE
 })
 
