@@ -8,7 +8,7 @@ formSelector.addEventListener('submit', (e) => {
   e.preventDefault()
   const league = leagueSelector.value
   const team = teamSelector.value
-  const phoneNumber = inputSelector.value
+  const phoneNumber = `+${inputSelector.value}`
   const data = {league, team, phoneNumber}
 
   fetch(`/submit`, {
