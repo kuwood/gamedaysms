@@ -10,6 +10,8 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
 
+const axios = require('axios')
+
 const admin = require('firebase-admin')
 const serviceAccount = require('./serviceAccountKey.json')
 
@@ -42,12 +44,6 @@ app.post('/submit', (req, res) => {
         nbaRef.child('golden-state-warriors').update({
           [phoneNumber]: true
         })
-        // client.messages.create({
-        //   to: process.env.TESTPHONENUMBER,
-        //   from: process.env.YOURTWILIONUMBER,
-        //   body:'Test!'
-        // })
-          // .then(message => console.log(err, message.sid))
         res.sendStatus(201)
       }
     })
@@ -55,15 +51,111 @@ app.post('/submit', (req, res) => {
 })
 
 const checkDay = new cronJob('0 12 * * *', () => {
-  // check for games
-  // for each team, get number list,
-  // for each number send message
-  client.messages.create({
-    to: process.env.TESTPHONENUMBER,
-    from: process.env.YOURTWILIONUMBER,
-    body:'CronJob Test!'
+  // check for games (currently only NBA)
+  axios({
+    method: 'get',
+    url: 'https://erikberg.com/events.json?sport=nba',
+    headers: {
+      Authorization: ` Bearer ${process.env.XMLSTATSTOKEN}`
+    }
   })
-    .then(message => console.log(err, message.sid))  
+  .then(res => {
+    console.log(res.data)
+    // build list of teams playing
+    if (res.data.count > 0) {
+      let teamList = []
+      res.data.event.forEach(event => {
+        const away_team_id = event.away_team.team_id
+        const home_team_id = event.home_team.team_id
+        const away_team_full_name = event.away_team.full_name
+        const home_team_full_name = event.home_team.full_name
+        const {start_date_time} = event
+        teamList.push({
+          team_id: away_team_id,
+          time: start_date_time,
+          full_name: away_team_full_name,
+        })
+        teamList.push({
+          team_id: home_team_id,
+          time: start_date_time,
+          full_name: home_team_full_name,
+        })
+      })
+      return teamList
+    } else {
+      return []
+    }
+  })
+  .then(list => {
+    // Get numbers that are subscribed to each team
+    console.log('----------')
+    console.log(list)
+    if (list.length === 0) return
+    return Promise.all(list.map(team => {
+      return ref.child('nba').child(team.team_id).once("value", data => data)
+              .then(data => {
+                team['numbers'] = data.val()
+                return team
+              })
+    }))
+    .then(teams => {
+      // create an object for each number that has each each team
+      // that it is subscribed to and is playing with event info
+      console.log('----------')
+      console.log(teams)
+      let messageList = {}
+      teams.forEach(team => {
+        if (team.numbers === null || Object.keys(team.numbers).length < 1) return
+        Object.keys(team.numbers).forEach(number => {
+          const teamInfo = {
+            team_id: team.team_id,
+            time: team.time,
+            full_name: team.full_name
+          }
+          if (messageList[number]) messageList[number].push(teamInfo)
+          else messageList[number] = [teamInfo]
+        })
+      })
+      return messageList
+    })
+    .then(messageList => {
+      // for each number send message
+      console.log('----------')
+      console.log(messageList)
+      if (Object.keys(messageList).length === 0 && messageList.constructor === Object) {
+        console.log('no messages to send.')
+        return
+      }
+      Object.keys(messageList).forEach(phoneNumber => {
+        if (messageList[phoneNumber].length > 1) {
+          // if subbed to multiple teams combine them into a message
+          let message = []
+          messageList[phoneNumber].forEach(team => {
+            message.push(`${team.full_name} will play at ${team.time}.`)
+          })
+          client.messages.create({
+            to: phoneNumber,
+            from: process.env.YOURTWILIONUMBER,
+            body: message.join(' ')
+          })
+            .then(message => console.log(err, message.sid)) 
+        } else {
+          // if only one team grab first event from array
+          client.messages.create({
+            to: phoneNumber,
+            from: process.env.YOURTWILIONUMBER,
+            body: `${messageList[phoneNumber][0].full_name} will play at ${messageList[phoneNumber][0].time}.`
+          })
+            .then(message => console.log(err, message.sid)) 
+        }
+      })
+    })
+  })
+  .catch(err => console.log(err))
 }, null, true)
+  
+  // TODO:
+  // Date formatting
+  // Phone number format verification
 
 app.listen(3000, console.log('listening on 3000'))
