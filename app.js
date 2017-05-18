@@ -11,6 +11,7 @@ const bodyParser = require('body-parser')
 const app = express()
 
 const axios = require('axios')
+const moment = require('moment')
 
 const admin = require('firebase-admin')
 const serviceAccount = require('./serviceAccountKey.json')
@@ -141,10 +142,12 @@ const checkDay = new cronJob('0 12 * * *', () => {
             .then(message => console.log(err, message.sid)) 
         } else {
           // if only one team grab first event from array
+          const time = messageList[phoneNumber][0].time
+          const name = messageList[phoneNumber][0].full_name
           client.messages.create({
             to: phoneNumber,
             from: process.env.YOURTWILIONUMBER,
-            body: `${messageList[phoneNumber][0].full_name} will play at ${messageList[phoneNumber][0].time}.`
+            body: `${name} will play at ${moment(time).format('h:mm A')} PST.`
           })
             .then(message => console.log(err, message.sid)) 
         }
@@ -153,9 +156,8 @@ const checkDay = new cronJob('0 12 * * *', () => {
   })
   .catch(err => console.log(err))
 }, null, true)
-  
+
   // TODO:
-  // Date formatting
   // Phone number format verification
 
 app.listen(3000, console.log('listening on 3000'))
