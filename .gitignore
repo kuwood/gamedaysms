@@ -6,7 +6,9 @@ yarn-debug.log*
 yarn-error.log*
 
 #configs
-config.js
+.firebaserc
+firebase.json
+serviceAccountKey.json
 
 # Runtime data
 pids
