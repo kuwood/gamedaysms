@@ -162,4 +162,4 @@ const checkDay = new cronJob('5 12 * * *', () => {
   // TODO:
   // Phone number format verification
 const port = process.env.PORT || 3000
-app.listen(port, console.log('listening'))
+app.listen(port, console.log(`listening on port ${port}`))
