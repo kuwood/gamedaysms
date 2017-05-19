@@ -53,7 +53,7 @@ app.post('/submit', (req, res) => {
     .catch(err => console.log(err))
 })
 
-const checkDay = new cronJob('0 12 * * *', () => {
+const checkDay = new cronJob('5 12 * * *', () => {
   // check for games (currently only NBA)
   axios({
     method: 'get',
