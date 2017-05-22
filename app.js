@@ -53,7 +53,8 @@ app.post('/submit', (req, res) => {
     .catch(err => console.log(err))
 })
 
-const checkDay = new cronJob('5 12 * * *', () => {
+// subract utc to pdt time difference
+const checkDay = new cronJob('5 5 * * *', () => {
   // check for games (currently only NBA)
   axios({
     method: 'get',
