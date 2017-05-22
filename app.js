@@ -53,8 +53,8 @@ app.post('/submit', (req, res) => {
     .catch(err => console.log(err))
 })
 
-// subract utc to pdt time difference
-const checkDay = new cronJob('5 5 * * *', () => {
+// runs everyday at 12:05 PM PDT (5 minutes to ensure heroku dyno is awake)
+const checkDay = new cronJob('5 12 * * *', () => {
   // check for games (currently only NBA)
   axios({
     method: 'get',
@@ -150,7 +150,7 @@ const checkDay = new cronJob('5 5 * * *', () => {
           client.messages.create({
             to: phoneNumber,
             from: process.env.YOURTWILIONUMBER,
-            body: `${name} will play at ${moment(time).format('h:mm A')} PST.`
+            body: `${name} will play at ${moment.tz(time, `America/Los_Angeles`).format('h:mm A')} PST.`
           })
             .then(message => console.log(err, message.sid)) 
         }
@@ -158,7 +158,7 @@ const checkDay = new cronJob('5 5 * * *', () => {
     })
   })
   .catch(err => console.log(err))
-}, null, true)
+}, null, true, 'America/Los_Angeles')
 
   // TODO:
   // Phone number format verification
