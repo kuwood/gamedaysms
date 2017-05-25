@@ -87,13 +87,14 @@ const checkDay = new cronJob('5 12 * * *', () => {
       })
       return teamList
     } else {
+      console.log('Found no events for today.')
       return []
     }
   })
   .then(list => {
     // Get numbers that are subscribed to each team
     console.log('----------')
-    console.log(list)
+    console.log('team list', list)
     if (list.length === 0) return
     return Promise.all(list.map(team => {
       return ref.child('nba').child(team.team_id).once("value", data => data)
@@ -106,7 +107,7 @@ const checkDay = new cronJob('5 12 * * *', () => {
       // create an object for each number that has each each team
       // that it is subscribed to and is playing with event info
       console.log('----------')
-      console.log(teams)
+      console.log('teams with subscribers', teams)
       let messageList = {}
       teams.forEach(team => {
         if (team.numbers === null || Object.keys(team.numbers).length < 1) return
@@ -125,7 +126,7 @@ const checkDay = new cronJob('5 12 * * *', () => {
     .then(messageList => {
       // for each number send message
       console.log('----------')
-      console.log(messageList)
+      console.log('list of messages', messageList)
       if (Object.keys(messageList).length === 0 && messageList.constructor === Object) {
         console.log('no messages to send.')
         return
@@ -157,7 +158,7 @@ const checkDay = new cronJob('5 12 * * *', () => {
       })
     })
   })
-  .catch(err => console.log(err))
+  .catch(err => console.log('!error!', err))
 }, null, true, 'America/Los_Angeles')
 
   // TODO:
