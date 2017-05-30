@@ -24,7 +24,6 @@ admin.initializeApp({
 })
 
 const ref = admin.database().ref()
-const nbaRef = ref.child('nba')
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
@@ -33,24 +32,24 @@ app.use(express.static('public'))
 app.post('/submit', (req, res) => {
   console.log(req.body)
   const {league, team, phoneNumber} = req.body
-  const queryRef = ref.child(league).child(team)
+  const leagueRef = ref.child(league)
 
-  queryRef.once("value", data => data)
+  leagueRef.once("value", res => res)
     .then(data => {
-      const numbers = data.val()
-
-      if (numbers[phoneNumber]) {
-        res.sendStatus(409)
-      }
+      const teams = data.val()
+      // check if team exists
+      if (!teams[team]) res.sendStatus(404)
+      // check if number is already subscribed
+      else if (teams[team][phoneNumber]) res.sendStatus(409)
+      // add number
       else {
-        // add number
-        nbaRef.child('golden-state-warriors').update({
+        leagueRef.child(team).update({
           [phoneNumber]: true
         })
         res.sendStatus(201)
       }
     })
-    .catch(err => console.log(err))
+    .catch(err => console.error(err))
 })
 
 // runs everyday at 12:05 PM PDT (5 minutes to ensure heroku dyno is awake)
