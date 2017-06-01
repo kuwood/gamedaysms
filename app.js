@@ -86,8 +86,7 @@ const checkDay = new cronJob('5 12 * * *', () => {
       })
       return teamList
     } else {
-      console.log('Found no events for today.')
-      return []
+      return Promise.reject('No events today')
     }
   })
   .then(list => {
