@@ -66,25 +66,19 @@ const checkDay = new cronJob('5 12 * * *', () => {
     console.log(res.data)
     // build list of teams playing
     if (res.data.count > 0) {
-      let teamList = []
-      res.data.event.forEach(event => {
-        const away_team_id = event.away_team.team_id
-        const home_team_id = event.home_team.team_id
-        const away_team_full_name = event.away_team.full_name
-        const home_team_full_name = event.home_team.full_name
-        const {start_date_time} = event
-        teamList.push({
-          team_id: away_team_id,
-          time: start_date_time,
-          full_name: away_team_full_name,
-        })
-        teamList.push({
-          team_id: home_team_id,
-          time: start_date_time,
-          full_name: home_team_full_name,
-        })
-      })
-      return teamList
+      return res.data.event.reduce((acc, event) => {
+        const homeTeam = {
+          team_id: event.home_team.team_id,
+          time: event.start_date_time,
+          full_name: event.home_team.full_name,
+        }
+        const awayTeam = {
+          team_id: event.away_team.team_id,
+          time: event.start_date_time,
+          full_name: event.away_team.full_name,
+        }
+        return [...acc, homeTeam, awayTeam]
+      },[])
     } else {
       return Promise.reject('No events today')
     }
