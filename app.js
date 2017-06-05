@@ -64,93 +64,55 @@ const checkDay = new cronJob('5 12 * * *', () => {
   })
   .then(res => {
     console.log(res.data)
-    // build list of teams playing
-    if (res.data.count > 0) {
-      return res.data.event.reduce((acc, event) => {
-        const homeTeam = {
-          team_id: event.home_team.team_id,
-          time: event.start_date_time,
-          full_name: event.home_team.full_name,
-        }
-        const awayTeam = {
-          team_id: event.away_team.team_id,
-          time: event.start_date_time,
-          full_name: event.away_team.full_name,
-        }
-        return [...acc, homeTeam, awayTeam]
-      },[])
-    } else {
-      return Promise.reject('No events today')
-    }
+    // return events
+    if (res.data.count > 0) return res.data.event
+    else return Promise.reject('No events today')
   })
-  .then(list => {
+  .then(eventsArr => {
     // Get numbers that are subscribed to each team
-    console.log('----------')
-    console.log('team list', list)
-    if (list.length === 0) return
-    return Promise.all(list.map(team => {
-      return ref.child('nba').child(team.team_id).once("value", data => data)
-              .then(data => {
-                team['numbers'] = data.val()
-                return team
-              })
-    }))
-    .then(teams => {
-      // create an object for each number that has each each team
-      // that it is subscribed to and is playing with event info
-      console.log('----------')
-      console.log('teams with subscribers', teams)
-      let messageList = {}
-      teams.forEach(team => {
-        if (team.numbers === null || Object.keys(team.numbers).length < 1) return
-        Object.keys(team.numbers).forEach(number => {
-          const teamInfo = {
-            team_id: team.team_id,
-            time: team.time,
-            full_name: team.full_name
-          }
-          if (messageList[number]) messageList[number].push(teamInfo)
-          else messageList[number] = [teamInfo]
-        })
-      })
-      return messageList
+    const events = eventsArr.map(event => {
+      const teams = [event.home_team, event.away_team]
+      const getNumbers = Promise.all(teams.map(team => {
+        return ref.child('nba').child(team.team_id).once('value', data => data).then(data => data.val())
+      }))
+      .then(numbers => Object.assign({}, numbers[0],numbers[1]))
+      .then(mergedNumbers => Object.assign({}, event, {numbers: mergedNumbers}))
+      return getNumbers
     })
-    .then(messageList => {
-      // for each number send message
-      console.log('----------')
-      console.log('list of messages', messageList)
-      if (Object.keys(messageList).length === 0 && messageList.constructor === Object) {
-        console.log('no messages to send.')
-        return
-      }
-      Object.keys(messageList).forEach(phoneNumber => {
-        if (messageList[phoneNumber].length > 1) {
-          // if subbed to multiple teams combine them into a message
-          let message = []
-          messageList[phoneNumber].forEach(team => {
-            message.push(`${team.full_name} will play at ${team.time}.`)
-          })
-          client.messages.create({
-            to: phoneNumber,
-            from: process.env.YOURTWILIONUMBER,
-            body: message.join(' ')
-          })
-            .then(message => console.log(err, message.sid)) 
-        } else {
-          // if only one team grab first event from array
-          const time = messageList[phoneNumber][0].time
-          const name = messageList[phoneNumber][0].full_name
-          client.messages.create({
-            to: phoneNumber,
-            from: process.env.YOURTWILIONUMBER,
-            body: `${name} will play at ${moment.tz(time, `America/Los_Angeles`).format('h:mm A')} PST.`
-          })
-            .then(message => console.log(err, message.sid)) 
-        }
+    return Promise.all(events)
+  })
+  .then(eventsWithNumbers => {
+    // build object for each number that has a messageList of events
+    const numbersWithEvents = eventsWithNumbers.reduce((acc, event) => {
+      // iterate through numbers, check if num is in acc object, if so add event to numbersWithEvents
+      // else create key pair with event
+      Object.keys(event.numbers).forEach(num => {
+        if (num === 'placeHolder') return
+        else if (acc[num]) acc[num].events = [...acc[num].events, event]
+        else acc[num] = {events: [event]}
       })
+      return acc
+    }, {})
+    // check if object is empty
+    if (Object.keys(numbersWithEvents).length === 0 && numbersWithEvents.constructor === Object) {
+      return Promise.reject(`No numbers are subscribed to today's events`)
+    }
+    return numbersWithEvents
+  })
+  .then(messageObject => {
+    // create message for each number with each event in the list
+    Object.keys(messageObject).forEach(number => {
+      const message = messageObject[number].events.map(event => (
+        `${event.away_team.full_name} will play ${event.home_team.full_name} at ${moment.tz(event.start_date_time, `America/Los_Angeles`).format('h:mm A z')}.`))        
+      client.messages.create({
+        to: number,
+        from: process.env.YOURTWILIONUMBER,
+        body: message.join(' ')
+      })
+        .then(message => console.log(err, message.sid)) 
     })
   })
-  .catch(err => console.log('!error!', err))
+    .catch(err => console.log('error:', err))
 }, null, true, 'America/Los_Angeles')
 
   // TODO:
