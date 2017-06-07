@@ -38,15 +38,21 @@ app.post('/submit', (req, res) => {
     .then(data => {
       const teams = data.val()
       // check if team exists
-      if (!teams[team]) res.sendStatus(404)
+      if (!teams[team]) return res.status(404).json({
+        message: 'Failed: Sorry, we cannot find that team.'
+      })
       // check if number is already subscribed
-      else if (teams[team][phoneNumber]) res.sendStatus(409)
+      else if (teams[team][phoneNumber]) return res.status(409).json({
+        message: 'Failed: You are already subscribed to that team.'
+      })
       // add number
       else {
         leagueRef.child(team).update({
           [phoneNumber]: true
         })
-        res.sendStatus(201)
+        return res.status(201).json({
+          message: 'Success!'
+        })
       }
     })
     .catch(err => console.error(err))

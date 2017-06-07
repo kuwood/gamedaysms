@@ -3,6 +3,8 @@ const leagueSelector = document.getElementById('league')
 const teamSelector = document.getElementById('team')
 const submitSelector = document.getElementById('phone-submit')
 const formSelector = document.getElementById('phone-form')
+const feedbackSelector = document.getElementById('feedback')
+const messageSelector = document.getElementById('message')
 
 formSelector.addEventListener('submit', (e) => {
   e.preventDefault()
@@ -19,7 +21,22 @@ formSelector.addEventListener('submit', (e) => {
     method: 'POST',
     body: JSON.stringify(data)
   })
-    .then(response => console.log(response))
+    .then(data => {
+      console.log(data.status, data.statusText)
+      return data.json()
+    })
+    .then(response => {
+      const {message} = response 
+      if (message[0] !== "F") {
+        messageSelector.innerHTML = message
+        feedbackSelector.classList.remove('fail', 'hide')
+        feedbackSelector.classList.add('success')
+      } else {
+        messageSelector.innerHTML = message
+        feedbackSelector.classList.remove('success', 'hide')
+        feedbackSelector.classList.add('fail')
+      }
+    })
     .catch(err => console.error(err))
 
   console.log(phoneNumber)
