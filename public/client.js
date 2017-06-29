@@ -13,7 +13,7 @@ formSelector.addEventListener('submit', (e) => {
   const phoneNumber = `+${inputSelector.value}`
   const data = {league, team, phoneNumber}
 
-  fetch(`/submit`, {
+  fetch(`/api/submit`, {
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
