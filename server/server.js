@@ -4,7 +4,7 @@ const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const admin = require('firebase-admin')
 
-const dailyEventText = require('./dailyEventText')
+
 
 const app = express()
 
@@ -24,6 +24,7 @@ app.use(express.static('public'))
 app.use(require('./routes'))
 
 // runs job everyday at 12:05 PM PDT (5 minutes to ensure heroku dyno is awake)
+const dailyEventText = require('./dailyEventText')
 dailyEventText.start()
 
   // TODO:
