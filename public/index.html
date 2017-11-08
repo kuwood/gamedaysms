@@ -14,11 +14,14 @@
     <form id="phone-form">
       <div class="content-wrap">
         <div>
-          <span>Remind me at Noon, on game day, that the </span>
-          <select id="league">
-            <option value="nba">NBA</option>
-          </select>
-          <span>'s</span>
+          <div>Remind me at Noon,</div>
+          <div>on game day, that the </div>
+          <div>
+            <select id="league">
+              <option value="nba">NBA</option>
+            </select>
+            <span>'s</span>
+          </div>
           <select id="team">
             <option value="atlanta-hawks">Atlanta Hawks</option>
             <option value="boston-celtics">Boston Celtics</option>
@@ -52,7 +55,9 @@
             <option value="washington-wizards">Washington Wizards</option>
           </select>
           <span>will be playing.</span>
-          <p>You can text me the game time and the opponent at: </p>
+          <div id="feedback" class="feedback-wrap">
+            <p id="message">You can text me the game time and the opponent at: </p>
+          </div>
         </div>
       </div>
       <div class="content-wrap">
@@ -63,9 +68,6 @@
         </div>
       </div>
     </form>
-    <div id="feedback" class="feedback-wrap hide">
-      <p id="message">Hi this is a reasonably sized alert message.</p>
-    </div>
     <script src="client.js"></script>
   </body>
 </html>

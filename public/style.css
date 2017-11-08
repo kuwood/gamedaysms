@@ -1,7 +1,8 @@
 body {
   background-color: #1a237e;
-  font-size: 2em;
-  padding: 1em;
+  font-size: 1.2em;
+  box-sizing: border-box;
+  line-height: 1.5em;
 }
 
 h1 {
@@ -12,7 +13,7 @@ h1 {
   text-shadow: 0px 1px 2px rgba(0,0,0,0.30);
 }
 
-p, span, input, select, button {
+p, span, input, select, button, div {
   font-family: 'Open Sans', sans-serif;
   color: #e0e0e0;
   text-shadow: 0px 1px 2px rgba(0,0,0,0.30);
@@ -72,6 +73,7 @@ input:focus, select:focus{
 
 #phone-input {
   padding: 0.5em 1em;
+  margin-bottom: 1em;
 }
 
 .content-wrap {
@@ -100,4 +102,16 @@ input:focus, select:focus{
 
 .hide {
   opacity: 0;
+}
+
+@media screen and (min-width: 400px) {
+  body {
+    font-size: 1.5em;
+  }
+}
+
+@media screen and (min-width: 520px) {
+  body {
+    font-size: 2em;
+  }
 }
