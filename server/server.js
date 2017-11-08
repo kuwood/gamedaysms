@@ -4,8 +4,6 @@ const bodyParser = require('body-parser')
 const morgan = require('morgan')
 const admin = require('firebase-admin')
 
-
-
 const app = express()
 
 admin.initializeApp({
