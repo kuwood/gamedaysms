@@ -1,0 +1,18 @@
+{
+  "plugins": [
+    "react",
+    "mocha"
+  ],
+  "extends": [
+    "standard",
+    "eslint:recommended",
+    "plugin:react/recommended"
+  ],
+  "rules": {
+      "node/exports-style": ["error", "module.exports"],
+      "mocha/no-exclusive-tests": "error"
+  },
+  "env": {
+    "browser": true
+  }
+}
