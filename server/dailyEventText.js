@@ -8,10 +8,16 @@ const admin = require('firebase-admin')
 const cronJob = require('cron').CronJob
 
 const ref = admin.database().ref()
-
+smsJob()
 // runs everyday at 12:05 PM PDT (5 minutes to ensure heroku dyno is awake)
 const dailyEventText = new cronJob('5 12 * * *', () => {
   // check for games (currently only NBA)
+  smsJob()
+}, null, true, 'America/Los_Angeles')
+
+module.exports = dailyEventText
+
+function smsJob() {
   axios({
     method: 'get',
     url: 'https://erikberg.com/events.json?sport=nba',
@@ -46,7 +52,7 @@ const dailyEventText = new cronJob('5 12 * * *', () => {
       const numbersLength = numbers.length
       for (let i = 0; i < numbersLength; i++) {
         let number = numbers[i]
-        if (number === 'placeHolder') return
+        if (number === 'placeHolder') return acc
         else if (acc[number]) acc[number].events = [...acc[number].events, event]
         else acc[number] = {events: [event]}
       }
@@ -65,9 +71,7 @@ const dailyEventText = new cronJob('5 12 * * *', () => {
     for (let i = 0; i < numbersLength; i++) {
       const number = numbers[i]
       const message = messageObject[number].events.map(event => (
-        `${event.away_team.full_name} will play ${event.home_team.full_name} at
-         ${moment.tz(event.start_date_time, `America/Los_Angeles`)
-         .format('h:mm A z')}.`
+        `${event.away_team.full_name} will play ${event.home_team.full_name} at ${moment.tz(event.start_date_time, `America/Los_Angeles`).format('h:mm A z')}.\n`
       ))
       client.messages.create({
         to: number,
@@ -79,6 +83,4 @@ const dailyEventText = new cronJob('5 12 * * *', () => {
     }
   })
   .catch(err => console.log('error:', err))
-}, null, true, 'America/Los_Angeles')
-
-module.exports = dailyEventText
+}
