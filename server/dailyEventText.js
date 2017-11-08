@@ -1,3 +1,7 @@
+const accountSid = process.env.ACCOUNTSID
+const authToken = process.env.AUTHTOKEN
+const twilio = require('twilio')
+const client = new twilio(accountSid, authToken)
 const axios = require('axios')
 const moment = require('moment')
 const admin = require('firebase-admin')
@@ -16,7 +20,6 @@ const dailyEventText = new cronJob('5 12 * * *', () => {
     }
   })
   .then(res => {
-    console.log(res.data)
     // return events
     if (res.data.count > 0) return res.data.event
     else return Promise.reject('No events today')
@@ -39,11 +42,14 @@ const dailyEventText = new cronJob('5 12 * * *', () => {
     const numbersWithEvents = eventsWithNumbers.reduce((acc, event) => {
       // iterate through numbers, check if num is in acc object, if so add event to numbersWithEvents
       // else create key pair with event
-      Object.keys(event.numbers).forEach(num => {
-        if (num === 'placeHolder') return
-        else if (acc[num]) acc[num].events = [...acc[num].events, event]
-        else acc[num] = {events: [event]}
-      })
+      const numbers = Object.keys(event.numbers)
+      const numbersLength = numbers.length
+      for (let i = 0; i < numbersLength; i++) {
+        let number = numbers[i]
+        if (number === 'placeHolder') return
+        else if (acc[number]) acc[number].events = [...acc[number].events, event]
+        else acc[number] = {events: [event]}
+      }
       return acc
     }, {})
     // check if object is empty
@@ -54,18 +60,25 @@ const dailyEventText = new cronJob('5 12 * * *', () => {
   })
   .then(messageObject => {
     // create message for each number with each event in the list
-    Object.keys(messageObject).forEach(number => {
+    const numbers = Object.keys(messageObject)
+    const numbersLength = numbers.length
+    for (let i = 0; i < numbersLength; i++) {
+      const number = numbers[i]
       const message = messageObject[number].events.map(event => (
-        `${event.away_team.full_name} will play ${event.home_team.full_name} at ${moment.tz(event.start_date_time, `America/Los_Angeles`).format('h:mm A z')}.`))        
+        `${event.away_team.full_name} will play ${event.home_team.full_name} at
+         ${moment.tz(event.start_date_time, `America/Los_Angeles`)
+         .format('h:mm A z')}.`
+      ))
       client.messages.create({
         to: number,
         from: process.env.YOURTWILIONUMBER,
         body: message.join(' ')
       })
-        .then(message => console.log(err, message.sid)) 
-    })
+      .then(message => console.log(message.sid))
+      .catch(err => console.error('Error creating SMS message', err))
+    }
   })
-    .catch(err => console.log('error:', err))
+  .catch(err => console.log('error:', err))
 }, null, true, 'America/Los_Angeles')
 
 module.exports = dailyEventText

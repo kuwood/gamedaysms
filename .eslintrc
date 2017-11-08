@@ -1,0 +1,22 @@
+{
+  "plugins": [
+    "node",
+    "security",
+    "mocha"
+  ],
+  "extends": [
+    "standard",
+    "eslint:recommended",
+    "plugin:node/recommended",
+    "plugin:security/recommended"
+  ],
+  "rules": {
+      "node/exports-style": ["error", "module.exports"],
+      "mocha/no-exclusive-tests": "error",
+      "no-console": 0
+  },
+  "env": {
+    "node": true,
+    "browser": true
+  }
+}

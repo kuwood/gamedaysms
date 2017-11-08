@@ -1,14 +1,13 @@
 require('dotenv').config()
-const accountSid = process.env.ACCOUNTSID
-const authToken = process.env.AUTHTOKEN
-const twilio = require('twilio')
-const client = new twilio(accountSid, authToken)
-
 const express = require('express')
 const bodyParser = require('body-parser')
+const morgan = require('morgan')
+const admin = require('firebase-admin')
+
+const dailyEventText = require('./dailyEventText')
+
 const app = express()
 
-const admin = require('firebase-admin')
 admin.initializeApp({
   credential: admin.credential.cert({
     "private_key": process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
@@ -16,10 +15,8 @@ admin.initializeApp({
   }),
   databaseURL: process.env.FIREBASE
 })
-const ref = admin.database().ref()
 
-const dailyEventText = require('./dailyEventText')
-
+app.use(morgan('common'))
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static('public'))
