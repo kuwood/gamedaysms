@@ -8,7 +8,7 @@ const admin = require('firebase-admin')
 const cronJob = require('cron').CronJob
 
 const ref = admin.database().ref()
-smsJob()
+
 // runs everyday at 12:05 PM PDT (5 minutes to ensure heroku dyno is awake)
 const dailyEventText = new cronJob('5 12 * * *', () => {
   // check for games (currently only NBA)
