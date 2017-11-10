@@ -4,6 +4,7 @@ const teamSelector = document.getElementById('team')
 const formSelector = document.getElementById('phone-form')
 const feedbackSelector = document.getElementById('feedback')
 const messageSelector = document.getElementById('message')
+let feedbackTimeout;
 
 formSelector.addEventListener('submit', e => {
   e.preventDefault()
@@ -24,15 +25,23 @@ formSelector.addEventListener('submit', e => {
       return response.json().then(data => ({message: data.message, ok: response.ok}))
     })
     .then(response => {
-      if (response.ok) {
-        messageSelector.innerText = response.message
-        feedbackSelector.classList.remove('fail', 'hide')
-        feedbackSelector.classList.add('success')
-      } else {
-        messageSelector.innerText = response.message
-        feedbackSelector.classList.remove('success', 'hide')
-        feedbackSelector.classList.add('fail')
-      }
+      feedbackHandler(response)
     })
     .catch(err => console.error(err))
 })
+
+function feedbackHandler(response) {
+  clearTimeout(feedbackTimeout)
+  messageSelector.innerText = response.message
+  if (response.ok) {
+    messageSelector.classList.remove('fail')
+    messageSelector.classList.add('success')
+  } else {
+    messageSelector.classList.remove('success')
+    messageSelector.classList.add('fail')
+  }
+  feedbackSelector.classList.remove('hide')
+  feedbackTimeout = setTimeout(() => {
+    feedbackSelector.classList.add('hide')
+  }, 4000);
+}
