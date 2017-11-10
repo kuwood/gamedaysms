@@ -21,7 +21,7 @@ formSelector.addEventListener('submit', e => {
     body: JSON.stringify(payload)
   })
     .then(response => {
-      return response.json().then(data => ({message: data.message, ok: data.ok}))
+      return response.json().then(data => ({message: data.message, ok: response.ok}))
     })
     .then(response => {
       if (response.ok) {
