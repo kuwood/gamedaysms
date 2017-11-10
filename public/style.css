@@ -47,7 +47,7 @@ input:focus, select:focus{
 }
 
 .form-input-valid:valid {
-  box-shadow: 0 0 0px 1px green;
+  box-shadow: 0 0 0px 1px #e0e0e0;
 }
 
 .form-input-valid:invalid {
