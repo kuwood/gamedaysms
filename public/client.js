@@ -28,7 +28,6 @@ formSelector.addEventListener('submit', e => {
         messageSelector.innerText = response.message
         feedbackSelector.classList.remove('fail', 'hide')
         feedbackSelector.classList.add('success')
-        inputSelector.value = ""
       } else {
         messageSelector.innerText = response.message
         feedbackSelector.classList.remove('success', 'hide')
