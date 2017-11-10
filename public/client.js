@@ -20,11 +20,8 @@ formSelector.addEventListener('submit', e => {
     method: 'POST',
     body: JSON.stringify(data)
   })
-    .then(data => {
-      const ok = data.ok
-      const response = data.json()
-      response.ok = ok
-      return response
+    .then(response => {
+      return response.json().then(data => ({message: data.message, ok: data.ok}))
     })
     .then(response => {
       if (response.ok) {
