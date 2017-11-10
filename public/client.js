@@ -20,15 +20,19 @@ formSelector.addEventListener('submit', e => {
     method: 'POST',
     body: JSON.stringify(data)
   })
-    .then(data => data.json())
+    .then(data => {
+      const ok = data.ok
+      const response = data.json()
+      response.ok = ok
+      return response
+    })
     .then(response => {
-      const message = response.message 
       if (response.ok) {
-        messageSelector.innerText = message
+        messageSelector.innerText = response.message
         feedbackSelector.classList.remove('fail', 'hide')
         feedbackSelector.classList.add('success')
       } else {
-        messageSelector.innerText = message
+        messageSelector.innerText = response.message
         feedbackSelector.classList.remove('success', 'hide')
         feedbackSelector.classList.add('fail')
       }
