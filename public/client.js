@@ -10,7 +10,7 @@ formSelector.addEventListener('submit', e => {
   const league = leagueSelector.value
   const team = teamSelector.value
   const phoneNumber = `+${inputSelector.value}`
-  const data = {league, team, phoneNumber}
+  const payload = {league, team, phoneNumber}
 
   fetch(`/api/submit`, {
     headers: {
@@ -18,7 +18,7 @@ formSelector.addEventListener('submit', e => {
       'Content-Type': 'application/json'
     },
     method: 'POST',
-    body: JSON.stringify(data)
+    body: JSON.stringify(payload)
   })
     .then(response => {
       return response.json().then(data => ({message: data.message, ok: data.ok}))
