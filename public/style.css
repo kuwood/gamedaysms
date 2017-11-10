@@ -92,8 +92,12 @@ input:focus, select:focus{
   font-weight: bold;
 }
 
+.success, .fail {
+  border-bottom: none;
+}
+
 .success {
-    background: green;
+  background: green;
 }
 
 .fail {
